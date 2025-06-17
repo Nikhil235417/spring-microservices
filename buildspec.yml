@@ -1,0 +1,43 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      java: corretto11
+      docker: 20
+    commands:
+      - echo Installing Maven...
+      - apt-get update && apt-get install -y maven
+  pre_build:
+    commands:
+      - echo Logging into amazon ECR...
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 828741507301.dkr.ecr.us-east-1.amazonaws.com
+  build:
+    commands:
+      # build and push discovery-service
+      - echo building discovery-service...
+      - cd discovery-service
+      - mvn clean package -Dmaven.test.skip=true
+      - docker build -t 828741507301.dkr.ecr.us-east-1.amazonaws.com/discovery-service:latest .
+      - docker push 828741507301.dkr.ecr.us-east-1.amazonaws.com/discovery-service:latest
+      - cd ..
+      # build and push account service
+      - echo building account-service...
+      - cd account-service
+      - mvn clean package -Dmaven.test.skip=true
+      - docker build -t 828741507301.dkr.ecr.us-east-1.amazonaws.com/account-service:latest .
+      - docker push 828741507301.dkr.ecr.us-east-1.amazonaws.com/account-service:latest
+      # build and push zipkin-service
+      - echo building zipkin-service
+      - cd zipkin-service
+      - mvn clean package -Dmaven.test.skip=true
+      - docker build -t 828741507301.dkr.ecr.us-east-1.amazonaws.com/zipkin-service:latest .
+      - docker push 828741507301.dkr.ecr.us-east-1.amazonaws.co/zipkin-service:latest
+      # Build an push gateway-service
+      - echo building gateway-service
+      - cd gateway-service
+      - mvn clean package -Dmaven.test.skip=true
+      - docker build -t 828741507301.dkr.ecr.us-east-1.amazonaws.com/gateway-service:latest .
+      - docker push 82874150730.dkr.ecr.us-east-1.amazonaws.com/gateway-service:latest
+  post_build:
+    commands:
+      - all microservices built and pushed to ECR
