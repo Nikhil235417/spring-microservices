@@ -12,6 +12,7 @@ phases:
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 828741507301.dkr.ecr.us-east-1.amazonaws.com
   build:
     commands:
+      - set -e
       # build and push discovery-service
       - echo building discovery-service...
       - cd discovery-service
@@ -42,4 +43,4 @@ phases:
       - cd ..
   post_build:
     commands:
-      - all microservices built and pushed to ECR
+      - echo "all microservices built and pushed to ECR"
